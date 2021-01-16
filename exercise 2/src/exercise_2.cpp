@@ -9,11 +9,12 @@
 #include <learnopengl/camera.h>
 
 #include <iostream>
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window, glm::vec4 object_position[]);
-void renderSphere();
+void renderSphere(unsigned int X_SEGMENTS, unsigned int Y_SEGMENTS);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -27,6 +28,9 @@ Camera camera(glm::vec3(0.0f, 0.25f, 3.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
+
+bool light_changer = false;
+bool switcher_press = false;
 
 // timing
 float deltaTime = 0.0f;	
@@ -95,10 +99,57 @@ int main()
         -0.9f, 0.0f, -0.9f, 0.0f, 1.0f, 0.0f,
     };
 
+    // set up vertex data (and buffer(s)) and configure vertex attributes
+    // ------------------------------------------------------------------
+    float cube_vertices[] = {
+        -0.1f, -0.1f, -0.1f,  0.0f,  0.0f, -1.0f,
+         0.1f, -0.1f, -0.1f,  0.0f,  0.0f, -1.0f,
+         0.1f,  0.1f, -0.1f,  0.0f,  0.0f, -1.0f,
+         0.1f,  0.1f, -0.1f,  0.0f,  0.0f, -1.0f,
+        -0.1f,  0.1f, -0.1f,  0.0f,  0.0f, -1.0f,
+        -0.1f, -0.1f, -0.1f,  0.0f,  0.0f, -1.0f,
+
+        -0.1f, -0.1f,  0.1f,  0.0f,  0.0f,  1.0f,
+         0.1f, -0.1f,  0.1f,  0.0f,  0.0f,  1.0f,
+         0.1f,  0.1f,  0.1f,  0.0f,  0.0f,  1.0f,
+         0.1f,  0.1f,  0.1f,  0.0f,  0.0f,  1.0f,
+        -0.1f,  0.1f,  0.1f,  0.0f,  0.0f,  1.0f,
+        -0.1f, -0.1f,  0.1f,  0.0f,  0.0f,  1.0f,
+
+        -0.1f,  0.1f,  0.1f, -1.0f,  0.0f,  0.0f,
+        -0.1f,  0.1f, -0.1f, -1.0f,  0.0f,  0.0f,
+        -0.1f, -0.1f, -0.1f, -1.0f,  0.0f,  0.0f,
+        -0.1f, -0.1f, -0.1f, -1.0f,  0.0f,  0.0f,
+        -0.1f, -0.1f,  0.1f, -1.0f,  0.0f,  0.0f,
+        -0.1f,  0.1f,  0.1f, -1.0f,  0.0f,  0.0f,
+
+         0.1f,  0.1f,  0.1f,  1.0f,  0.0f,  0.0f,
+         0.1f,  0.1f, -0.1f,  1.0f,  0.0f,  0.0f,
+         0.1f, -0.1f, -0.1f,  1.0f,  0.0f,  0.0f,
+         0.1f, -0.1f, -0.1f,  1.0f,  0.0f,  0.0f,
+         0.1f, -0.1f,  0.1f,  1.0f,  0.0f,  0.0f,
+         0.1f,  0.1f,  0.1f,  1.0f,  0.0f,  0.0f,
+
+        -0.1f, -0.1f, -0.1f,  0.0f, -1.0f,  0.0f,
+         0.1f, -0.1f, -0.1f,  0.0f, -1.0f,  0.0f,
+         0.1f, -0.1f,  0.1f,  0.0f, -1.0f,  0.0f,
+         0.1f, -0.1f,  0.1f,  0.0f, -1.0f,  0.0f,
+        -0.1f, -0.1f,  0.1f,  0.0f, -1.0f,  0.0f,
+        -0.1f, -0.1f, -0.1f,  0.0f, -1.0f,  0.0f,
+
+        -0.1f,  0.1f, -0.1f,  0.0f,  1.0f,  0.0f,
+         0.1f,  0.1f, -0.1f,  0.0f,  1.0f,  0.0f,
+         0.1f,  0.1f,  0.1f,  0.0f,  1.0f,  0.0f,
+         0.1f,  0.1f,  0.1f,  0.0f,  1.0f,  0.0f,
+        -0.1f,  0.1f,  0.1f,  0.0f,  1.0f,  0.0f,
+        -0.1f,  0.1f, -0.1f,  0.0f,  1.0f,  0.0f
+    };
+
     glm::vec4 object_position_size[] = {
-        glm::vec4(0.2f, 0.0f, 0.5f, 0.2),
-        glm::vec4(0.5f, 0.5f, 0.5f, 0.2),
-        glm::vec4(0.7f, 0.0f, 0.3f, 0.2),
+        glm::vec4(0.2f, 0.0f, 0.6f, 0.15),
+        glm::vec4(0.5f, 0.5f, 0.5f, 0.15),
+        glm::vec4(0.7f, 0.0f, 0.2f, 0.15),
+        glm::vec4(0.6f, 0.07f, 0.8f, 0.15),
     };
 
     glm::vec3 tile_ambient_diffuse[2][2] =
@@ -114,16 +165,15 @@ int main()
         {glm::vec3(0.0f, 0.18f, 0.0f),  glm::vec3(0.07568f, 0.61f, 0.07568f)},
         {glm::vec3(0.0f, 0.0f, 0.18f),  glm::vec3(0.07568f, 0.07568f, 0.61f)},
         {glm::vec3(0.18f, 0.0f, 0.0f),  glm::vec3(0.61f, 0.07568f, 0.07568f)},
-        {glm::vec3(0.0f, 0.18f, 0.0f),  glm::vec3(0.07568f, 0.61f, 0.07568f)},
     };
 
-    unsigned int VBO, VAO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
+    unsigned int tileVBO, tileVAO;
+    glGenVertexArrays(1, &tileVAO);
+    glGenBuffers(1, &tileVBO);
 
-    glBindVertexArray(VAO);
+    glBindVertexArray(tileVAO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, tileVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(tile_vertices), tile_vertices, GL_STATIC_DRAW);
 
     // position attribute
@@ -133,15 +183,32 @@ int main()
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, tileVBO);
     // note that we update the lamp's position attribute's stride to reflect the updated buffer data
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
+    // second, configure the light's VAO (VBO stays the same; the vertices are the same for the light object which is also a 3D cube)
+    unsigned int cubeVBO, cubeVAO;
+    glGenVertexArrays(1, &cubeVAO);
+    glBindVertexArray(cubeVAO);
+    glGenBuffers(1, &cubeVBO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices), cube_vertices, GL_STATIC_DRAW);
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // normal attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
     {
+
         // input
         // -----
         processInput(window, object_position_size);
@@ -174,6 +241,10 @@ int main()
         ourShader.setFloat("light.linear", 0.09f);
         ourShader.setFloat("light.quadratic", 0.032f);
 
+        ourShader.setBool("spotlight", light_changer);
+
+        std::cout << light_changer << std::endl;
+
         // pass projection matrix to shader (note that in this case it could change every frame)
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         ourShader.setMat4("projection", projection);
@@ -182,12 +253,11 @@ int main()
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.setMat4("view", view);
 
-
         // create transformations
         glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         ourShader.setMat4("model", model);
         
-        glBindVertexArray(VAO);
+        glBindVertexArray(tileVAO);
 
         ourShader.setVec3("material.specular", glm::vec3(1.0f, 1.0f, 1.0f));
         ourShader.setFloat("material.shininess", 128.0f);
@@ -198,17 +268,15 @@ int main()
             {
                 ourShader.setVec3("material.ambient", tile_ambient_diffuse[color_switcher][0]);
                 ourShader.setVec3("material.diffuse", tile_ambient_diffuse[color_switcher][1]);
-                
+
                 glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, glm::vec3( i * 0.1f, 0.0f, j * 0.1f));
+                model = glm::translate(model, glm::vec3(i * 0.1f, 0.0f, j * 0.1f));
                 ourShader.setMat4("model", model);
 
                 color_switcher = !color_switcher;
 
                 glDrawArrays(GL_TRIANGLES, 0, 6);
             }
-
-        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         ourShader.setVec3("material.specular", glm::vec3(0.94f, 0.94f, 0.94f));
         ourShader.setFloat("material.shininess", 111.0f);
@@ -223,8 +291,19 @@ int main()
             model = glm::scale(model, glm::vec3(0.11f));
             ourShader.setMat4("model", model);
 
-            renderSphere();
+            renderSphere(32, 32);
         }
+        
+        ourShader.setVec3("material.ambient", glm::vec3(0.67f, 0.0f, 0.0f));
+        ourShader.setVec3("material.diffuse", glm::vec3(1.0f, 0.67f, 0.41f));
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(object_position_size[3].x, object_position_size[3].y, object_position_size[3].z));
+        model = glm::scale(model, glm::vec3(0.7f));
+        ourShader.setMat4("model", model);
+
+        glBindVertexArray(cubeVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -232,8 +311,12 @@ int main()
 
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
+
+    glDeleteVertexArrays(1, &tileVAO);
+    glDeleteBuffers(1, &tileVBO);
+
+    glDeleteVertexArrays(1, &cubeVAO);
+    glDeleteBuffers(1, &cubeVBO);
     
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
@@ -247,6 +330,15 @@ void processInput(GLFWwindow* window, glm::vec4 object_position[])
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_RELEASE && switcher_press)
+        switcher_press = false;
+
+    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS && !switcher_press)
+    {
+        switcher_press = true;
+        light_changer = !light_changer;
+    }
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera.ProcessKeyboard(FORWARD, deltaTime, object_position, OBJECTS_NUMBER);
@@ -298,7 +390,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 // -------------------------------------------------
 unsigned int sphereVAO = 0;
 unsigned int indexCount;
-void renderSphere()
+void renderSphere(unsigned int X_SEGMENTS, unsigned int Y_SEGMENTS)
 {
     if (sphereVAO == 0)
     {
@@ -312,8 +404,6 @@ void renderSphere()
         std::vector<glm::vec3> normals;
         std::vector<unsigned int> indices;
 
-        const unsigned int X_SEGMENTS = 64;
-        const unsigned int Y_SEGMENTS = 64;
         const float PI = 3.14159265359;
         for (unsigned int y = 0; y <= Y_SEGMENTS; ++y)
         {

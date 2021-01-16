@@ -18,8 +18,8 @@ enum Camera_Movement {
 // Default camera values
 const float YAW         = -90.0f;
 const float PITCH       =  0.0f;
-const float SPEED       =  2.5f;
-const float SENSITIVITY =  0.1f;
+const float SPEED       =  2.0f;
+const float SENSITIVITY =  0.08f;
 const float ZOOM        =  45.0f;
 
 
@@ -71,7 +71,7 @@ public:
     {
         float velocity = MovementSpeed * deltaTime;
       
-        glm::vec3 position_tmp;
+        glm::vec3 position_tmp = Position;
 
         if (direction == FORWARD)
             position_tmp = Position - glm::normalize(glm::cross(Right, WorldUp)) * velocity;
@@ -97,7 +97,6 @@ public:
 
         if(!collision)
             Position = position_tmp;
- 
     }
 
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.

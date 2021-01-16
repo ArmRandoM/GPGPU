@@ -27,6 +27,7 @@ struct Light {
 in vec3 FragPos;  
 in vec3 Normal;  
 
+uniform bool spotlight;
 uniform vec3 objectColor;
 uniform vec3 viewPos;
 uniform Material material;
@@ -50,16 +51,20 @@ void main()
     float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
     vec3 specular = light.specular * (spec * material.specular); // assuming bright white light color
     
-    // spotlight (soft edges)
-    float theta = dot(lightDir, normalize(-light.direction)); 
-    float epsilon = (light.cutOff - light.outerCutOff);
-    float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
-    diffuse  *= intensity;
-    specular *= intensity;
-    
+    if(spotlight)
+    {
+        // spotlight (soft edges)
+        float theta = dot(lightDir, normalize(-light.direction)); 
+        float epsilon = (light.cutOff - light.outerCutOff);
+        float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
+        diffuse  *= intensity;
+        specular *= intensity;
+    }
+
     // attenuation
     float distance = length(light.position - FragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
+    
     ambient  *= attenuation; 
     diffuse  *= attenuation;
     specular *= attenuation;   
