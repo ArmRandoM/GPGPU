@@ -1,3 +1,6 @@
+/*  Since OpenGL 3.3 and higher the version numbers of GLSL match the version of OpenGL. 
+ *  We also explicitly mention we're using core profile functionality.
+*/
 #version 330 core
 
 out vec4 FragColor;
@@ -70,5 +73,11 @@ void main()
     specular *= attenuation;   
         
     vec3 result = ambient + diffuse + specular; 
+
+    /*  The fragment shader only requires one output variable and that is a vector of size 4 that defines the final color 
+     *  output that we should calculate. 
+     *  We can declare output values with the out keyword, that we here promptly named FragColor. 
+     *  Next we simply assign a vec4 to the color output with an alpha value of 1.0 (1.0 being completely opaque).
+    */
     FragColor = vec4(result, 1.0);
 } 
