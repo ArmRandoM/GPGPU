@@ -30,7 +30,7 @@ struct Light {
 in vec3 FragPos;  
 in vec3 Normal;  
 
-uniform vec3 objectColor;
+uniform float alpha;
 uniform vec3 viewPos;
 uniform Material material;
 uniform Light light;
@@ -53,15 +53,12 @@ void main()
     float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
     vec3 specular = light.specular * (spec * material.specular); // assuming bright white light color
     
-    if(spotlight)
-    {
-        // spotlight (soft edges)
-        float theta = dot(lightDir, normalize(-light.direction)); 
-        float epsilon = (light.cutOff - light.outerCutOff);
-        float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
-        diffuse  *= intensity;
-        specular *= intensity;
-    }
+    // spotlight (soft edges)
+    float theta = dot(lightDir, normalize(-light.direction)); 
+    float epsilon = (light.cutOff - light.outerCutOff);
+    float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
+    diffuse  *= intensity;
+    specular *= intensity;
 
     // attenuation
     float distance = length(light.position - FragPos);
@@ -78,5 +75,5 @@ void main()
      *  We can declare output values with the out keyword, that we here promptly named FragColor. 
      *  Next we simply assign a vec4 to the color output with an alpha value of 1.0 (1.0 being completely opaque).
     */
-    FragColor = vec4(result, 1.0);
+    FragColor = vec4(result, alpha);
 } 
